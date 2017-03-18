@@ -1,6 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { Meteor } from 'meteor/meteor';
-import { createContainer } from 'meteor/react-meteor-data';
+import { gql, graphql } from 'react-apollo';
 
 import { Tasks } from '../api/tasks';
 
@@ -37,11 +37,12 @@ class App extends Component {
   }
 
   renderTasks() {
-    const filteredTasks = this.props.tasks.filter(task => (
+    const tasks = this.props.data.tasks;
+    const currentUserId = this.props.data.currentUser && this.props.data.currentUser._id;
+    const filteredTasks = tasks.filter(task => (
       !this.state.hideCompleted || !task.checked
     ));
     return filteredTasks.map(task => {
-      const currentUserId = this.props.currentUser && this.props.currentUser._id;
       const showPrivateButton = currentUserId === task.owner;
 
       return (
@@ -58,7 +59,7 @@ class App extends Component {
     return (
       <div className="container">
         <header>
-          <h1>Todo List ({this.props.incompleteCount})</h1>
+          <h1>Todo List ({this.props.data.incompleteCount})</h1>
 
           <label className="hide-completed">
             <input
@@ -72,7 +73,7 @@ class App extends Component {
 
           <AccountsUIWrapper />
 
-          { this.props.currentUser ?
+          { this.props.data.currentUser ?
             <form className="new-task" onSubmit={this.handleSubmit.bind(this)}>
               <input
                 type="text"
@@ -93,17 +94,27 @@ class App extends Component {
 }
 
 App.propTypes = {
-  tasks: PropTypes.array.isRequired,
-  incompleteCount: PropTypes.number.isRequired,
-  currentUser: PropTypes.object,
+  data: PropTypes.shape({
+    tasks: PropTypes.array.isRequired,
+    incompleteCount: PropTypes.number.isRequired,
+    currentUser: PropTypes.object,
+  }).isRequired,
 };
 
-export default createContainer(() => {
-  Meteor.subscribe('tasks');
-
-  return {
-    tasks: Tasks.find({}, { sort: { createdAt: -1 } }).fetch(),
-    incompleteCount: Tasks.find({ checked: { $ne: true } }).count(),
-    currentUser: Meteor.user(),
-  };
-}, App);
+export default graphql(gql`
+  query AppQuery {
+    tasks {
+      _id
+      text
+      email
+      owner
+      checked
+      private
+      createdAt
+    }
+    incompleteCount
+    currentUser {
+      _id
+    }
+  }
+`)(App);
