@@ -99,6 +99,22 @@ class App extends Component {
   }
 }
 
+App.propTypes = {
+  data: PropTypes.shape({
+    tasks: PropTypes.array,
+    incompleteCount: PropTypes.number,
+    currentUser: PropTypes.object,
+  }).isRequired,
+};
+
+App.defaultProps = {
+  data: {
+    tasks: [],
+    incompleteCount: 0,
+    currentUser: null,
+  }
+};
+
 export default graphql(gql`
   query AppQuery {
     tasks {
