@@ -56,10 +56,16 @@ class App extends Component {
   }
 
   render() {
+    const { data: { loading, incompleteCount, currentUser } } = this.props;
+
+    if (loading) {
+      return null;
+    }
+
     return (
       <div className="container">
         <header>
-          <h1>Todo List ({this.props.data.incompleteCount})</h1>
+          <h1>Todo List ({incompleteCount})</h1>
 
           <label className="hide-completed">
             <input
@@ -73,7 +79,7 @@ class App extends Component {
 
           <AccountsUIWrapper />
 
-          { this.props.data.currentUser ?
+          { currentUser ?
             <form className="new-task" onSubmit={this.handleSubmit.bind(this)}>
               <input
                 type="text"
@@ -92,14 +98,6 @@ class App extends Component {
     );
   }
 }
-
-App.propTypes = {
-  data: PropTypes.shape({
-    tasks: PropTypes.array.isRequired,
-    incompleteCount: PropTypes.number.isRequired,
-    currentUser: PropTypes.object,
-  }).isRequired,
-};
 
 export default graphql(gql`
   query AppQuery {
