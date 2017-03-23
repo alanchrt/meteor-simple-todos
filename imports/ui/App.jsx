@@ -7,6 +7,23 @@ import { Tasks } from '../api/tasks';
 import Task from './Task';
 import AccountsUIWrapper from './AccountsUIWrapper';
 
+@graphql(gql`
+  query AppQuery {
+    tasks {
+      _id
+      text
+      email
+      owner
+      checked
+      private
+      createdAt
+    }
+    incompleteCount
+    currentUser {
+      _id
+    }
+  }
+`)
 class App extends Component {
   constructor(props) {
     super(props);
@@ -101,6 +118,7 @@ class App extends Component {
 
 App.propTypes = {
   data: PropTypes.shape({
+    loading: PropTypes.bool,
     tasks: PropTypes.array,
     incompleteCount: PropTypes.number,
     currentUser: PropTypes.object,
@@ -109,26 +127,11 @@ App.propTypes = {
 
 App.defaultProps = {
   data: {
+    loading: true,
     tasks: [],
     incompleteCount: 0,
     currentUser: null,
   }
 };
 
-export default graphql(gql`
-  query AppQuery {
-    tasks {
-      _id
-      text
-      email
-      owner
-      checked
-      private
-      createdAt
-    }
-    incompleteCount
-    currentUser {
-      _id
-    }
-  }
-`)(App);
+export default App;
