@@ -28,7 +28,6 @@ export const resolvers = {
       return context.user;
     },
   },
-
   Mutation: {
     addTask(root, args, context) {
       if (!context.userId) {
@@ -44,6 +43,16 @@ export const resolvers = {
           email: Meteor.users.findOne(context.userId).emails[0].address,
         }, (err, taskId) => resolve(Tasks.findOne(taskId)));
       });
-    }
+    },
+    removeTask(root, args, context) {
+      const taskId = args.id;
+      const task = Tasks.findOne(taskId);
+      if (task.private && task.owner !== context.userId) {
+        return null;
+      }
+      return new Promise(resolve => {
+        Tasks.remove(taskId, () => resolve(task));
+      });
+    },
   }
 };

@@ -52,7 +52,8 @@ class App extends Component {
     const { text } = this.state;
     const { addTask } = this.props;
     addTask({
-      variables: { text }
+      variables: { text },
+      refetchQueries: ['AppQuery'],
     });
     this.setState({ text: '' });
   }
@@ -65,6 +66,10 @@ class App extends Component {
 
   renderTasks() {
     const tasks = this.props.data.tasks;
+    if (!tasks) {
+      return;
+    }
+
     const currentUserId = this.props.data.currentUser && this.props.data.currentUser._id;
     const filteredTasks = tasks.filter(task => (
       !this.state.hideCompleted || !task.checked
@@ -83,11 +88,7 @@ class App extends Component {
   }
 
   render() {
-    const { data: { loading, incompleteCount, currentUser } } = this.props;
-
-    if (loading) {
-      return null;
-    }
+    const { data: { incompleteCount, currentUser } } = this.props;
 
     return (
       <div className="container">

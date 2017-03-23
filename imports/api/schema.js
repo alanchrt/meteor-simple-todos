@@ -21,5 +21,6 @@ type Query {
 
 type Mutation {
   addTask(text: String!): Task
+  removeTask(id: String!): Task
 }
 `;

@@ -1,9 +1,17 @@
 import React, { Component, PropTypes } from 'react';
 import { Meteor } from 'meteor/meteor';
+import { gql, graphql } from 'react-apollo';
 import classnames from 'classnames';
 
 import { Tasks } from '../api/tasks';
 
+@graphql(gql`
+  mutation removeTask($id: String!) {
+    removeTask(id: $id) {
+      _id
+    }
+  }
+`, { name: 'removeTask' })
 export default class Task extends Component {
   constructor() {
     super()
@@ -18,7 +26,11 @@ export default class Task extends Component {
   }
 
   deleteThisTask() {
-    Meteor.call('tasks.remove', this.props.task._id);
+    const { task, removeTask } = this.props;
+    removeTask({
+      variables: { id: task._id },
+      refetchQueries: ['AppQuery'],
+    });
   }
 
   render() {
