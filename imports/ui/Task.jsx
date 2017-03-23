@@ -2,16 +2,17 @@ import React, { Component, PropTypes } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { gql, graphql } from 'react-apollo';
 import classnames from 'classnames';
+import update from 'immutability-helper';
 
 import { Tasks } from '../api/tasks';
 
 @graphql(gql`
-  mutation removeTask($id: String!) {
-    removeTask(id: $id) {
+  mutation deleteTask($id: String!) {
+    deleteTask(id: $id) {
       _id
     }
   }
-`, { name: 'removeTask' })
+`, { name: 'deleteTask' })
 export default class Task extends Component {
   constructor() {
     super()
@@ -26,10 +27,26 @@ export default class Task extends Component {
   }
 
   deleteThisTask() {
-    const { task, removeTask } = this.props;
-    removeTask({
+    const { task, deleteTask } = this.props;
+    deleteTask({
       variables: { id: task._id },
-      refetchQueries: ['AppQuery'],
+      updateQueries: {
+        AppQuery: (prev, { mutationResult }) => {
+          let taskIndex;
+          const deletedTask = mutationResult.data.deleteTask;
+          prev.tasks.find((task, i) => {
+            if (task._id === deletedTask._id) {
+              taskIndex = i;
+              return true;
+            }
+          });
+          return update(prev, {
+            tasks: {
+              $splice: [[taskIndex, 1]],
+            },
+          });
+        },
+      },
     });
   }
 

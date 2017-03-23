@@ -44,7 +44,7 @@ export const resolvers = {
         }, (err, taskId) => resolve(Tasks.findOne(taskId)));
       });
     },
-    removeTask(root, args, context) {
+    deleteTask(root, args, context) {
       const taskId = args.id;
       const task = Tasks.findOne(taskId);
       if (task.private && task.owner !== context.userId) {

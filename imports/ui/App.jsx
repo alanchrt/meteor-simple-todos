@@ -1,6 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { gql, graphql } from 'react-apollo';
+import update from 'immutability-helper';
 
 import { Tasks } from '../api/tasks';
 
@@ -28,6 +29,12 @@ import AccountsUIWrapper from './AccountsUIWrapper';
   mutation addTask($text: String!) {
     addTask(text: $text) {
       _id
+      text
+      email
+      owner
+      checked
+      private
+      createdAt
     }
   }
 `, { name: 'addTask' })
@@ -53,7 +60,16 @@ class App extends Component {
     const { addTask } = this.props;
     addTask({
       variables: { text },
-      refetchQueries: ['AppQuery'],
+      updateQueries: {
+        AppQuery: (prev, { mutationResult }) => {
+          const task = mutationResult.data.addTask;
+          return update(prev, {
+            tasks: {
+              $unshift: [task],
+            },
+          });
+        },
+      },
     });
     this.setState({ text: '' });
   }
@@ -88,7 +104,11 @@ class App extends Component {
   }
 
   render() {
-    const { data: { incompleteCount, currentUser } } = this.props;
+    const { data: { loading, incompleteCount, currentUser } } = this.props;
+
+    if (loading) {
+      return null;
+    }
 
     return (
       <div className="container">
