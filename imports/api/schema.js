@@ -18,4 +18,8 @@ type Query {
   incompleteCount: Int
   currentUser: User
 }
+
+type Mutation {
+  addTask(text: String!): Task
+}
 `;

@@ -1,3 +1,4 @@
+import { Meteor } from 'meteor/meteor';
 import { Tasks } from './tasks';
 
 export const resolvers = {
@@ -27,4 +28,22 @@ export const resolvers = {
       return context.user;
     },
   },
+
+  Mutation: {
+    addTask(root, args, context) {
+      if (!context.userId) {
+          return null;
+      }
+
+      const { text } = args;
+      return new Promise(resolve => {
+        Tasks.insert({
+          text,
+          createdAt: new Date(),
+          owner: context.userId,
+          email: Meteor.users.findOne(context.userId).emails[0].address,
+        }, (err, taskId) => resolve(Tasks.findOne(taskId)));
+      });
+    }
+  }
 };

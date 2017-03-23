@@ -24,6 +24,13 @@ import AccountsUIWrapper from './AccountsUIWrapper';
     }
   }
 `)
+@graphql(gql`
+  mutation addTask($text: String!) {
+    addTask(text: $text) {
+      _id
+    }
+  }
+`, { name: 'addTask' })
 class App extends Component {
   constructor(props) {
     super(props);
@@ -43,7 +50,10 @@ class App extends Component {
   handleSubmit(event) {
     event.preventDefault();
     const { text } = this.state;
-    Meteor.call('tasks.insert', text);
+    const { addTask } = this.props;
+    addTask({
+      variables: { text }
+    });
     this.setState({ text: '' });
   }
 

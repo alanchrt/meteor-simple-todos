@@ -5,20 +5,6 @@ import { check } from 'meteor/check';
 export const Tasks = new Mongo.Collection('tasks');
 
 Meteor.methods({
-  'tasks.insert'(text) {
-    check(text, String);
-
-    if (!this.userId) {
-    throw new Meteor.Error('not-authorized');
-    }
-
-    Tasks.insert({
-      text,
-      createdAt: new Date(),
-      owner: this.userId,
-      email: Meteor.users.findOne(this.userId).emails[0].address,
-    });
-  },
   'tasks.remove'(taskId) {
     check(taskId, String);
     const task = Tasks.findOne(taskId);
