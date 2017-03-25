@@ -12,7 +12,32 @@ import { Tasks } from '../api/tasks';
       _id
     }
   }
-`, { name: 'deleteTask' })
+`, {
+  props: ({ ownProps, mutate }) => ({
+    deleteTask: (taskId) => {
+      return mutate({
+        variables: { id: taskId },
+        updateQueries: {
+          AppQuery: (prev, { mutationResult }) => {
+            let taskIndex;
+            const deletedTask = mutationResult.data.deleteTask;
+            prev.tasks.find((task, i) => {
+              if (taskId === deletedTask._id) {
+                taskIndex = i;
+                return true;
+              }
+            });
+            return update(prev, {
+              tasks: {
+                $splice: [[taskIndex, 1]],
+              },
+            });
+          },
+        },
+      });
+    },
+  }),
+})
 export default class Task extends Component {
   constructor() {
     super()
@@ -28,26 +53,7 @@ export default class Task extends Component {
 
   deleteThisTask() {
     const { task, deleteTask } = this.props;
-    deleteTask({
-      variables: { id: task._id },
-      updateQueries: {
-        AppQuery: (prev, { mutationResult }) => {
-          let taskIndex;
-          const deletedTask = mutationResult.data.deleteTask;
-          prev.tasks.find((task, i) => {
-            if (task._id === deletedTask._id) {
-              taskIndex = i;
-              return true;
-            }
-          });
-          return update(prev, {
-            tasks: {
-              $splice: [[taskIndex, 1]],
-            },
-          });
-        },
-      },
-    });
+    deleteTask(task._id);
   }
 
   render() {
