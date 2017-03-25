@@ -54,5 +54,18 @@ export const resolvers = {
         Tasks.remove(taskId, () => resolve(task));
       });
     },
+    setChecked(root, args, context) {
+        const taskId = args.id;
+        const setChecked = args.setChecked;
+        const task = Tasks.findOne(taskId);
+        if (task.private && task.owner !== Meteor.userId()) {
+          return null;
+        }
+        return new Promise(resolve => {
+          Tasks.update(taskId, { $set: { checked: setChecked } }, () =>{
+            resolve(Tasks.findOne(taskId));
+          });
+        });
+    },
   }
 };

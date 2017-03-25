@@ -27,5 +27,6 @@ type Query {
 type Mutation {
   addTask(text: String!): Task
   deleteTask(id: String!): Task
+  setChecked(id: String!, setChecked: Boolean!): Task
 }
 `;

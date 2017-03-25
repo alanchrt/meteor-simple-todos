@@ -38,13 +38,57 @@ import { Tasks } from '../api/tasks';
     },
   }),
 })
+@graphql(gql`
+  mutation setChecked($id: String!, $setChecked: Boolean!) {
+    setChecked(id: $id, setChecked: $setChecked) {
+      _id
+      text
+      email
+      owner
+      checked
+      private
+      createdAt
+    }
+  }
+`, {
+  props: ({ ownProps, mutate }) => ({
+    setChecked: (taskId, setChecked) => {
+      return mutate({
+        variables: { id: taskId, setChecked },
+        updateQueries: {
+          AppQuery: (prev, { mutationResult }) => {
+            let taskIndex;
+            const checkedTask = mutationResult.data.setChecked;
+            prev.tasks.find((task, i) => {
+              if (taskId === checkedTask._id) {
+                taskIndex = i;
+                return true;
+              }
+            });
+            return update(prev, {
+              tasks: {
+                $apply: tasks => tasks.map(task => {
+                  if (task._id === checkedTask._id) {
+                    return checkedTask;
+                  }
+                  return task;
+                }),
+              },
+            });
+          },
+        },
+      });
+    },
+  }),
+})
 export default class Task extends Component {
   constructor() {
     super()
   }
 
   toggleChecked() {
-    Meteor.call('tasks.setChecked', this.props.task._id, !this.props.task.checked);
+    const { setChecked } = this.props;
+    setChecked(this.props.task._id, !this.props.task.checked);
   }
 
   togglePrivate() {
