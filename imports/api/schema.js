@@ -20,7 +20,6 @@ type Task {
 
 type Query {
   tasks: [Task]
-  incompleteCount: Int
   currentUser: User
 }
 

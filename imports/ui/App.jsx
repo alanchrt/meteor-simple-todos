@@ -17,7 +17,6 @@ import AccountsUIWrapper from './AccountsUIWrapper';
       private
       createdAt
     }
-    incompleteCount
     currentUser {
       _id
       emails {
@@ -112,11 +111,13 @@ class App extends Component {
   }
 
   render() {
-    const { data: { loading, incompleteCount, currentUser } } = this.props;
+    const { data: { loading, tasks, currentUser } } = this.props;
 
     if (loading) {
       return null;
     }
+
+    const incompleteCount = tasks.filter(task => !task.checked).length;
 
     return (
       <div className="container">
@@ -159,7 +160,6 @@ App.propTypes = {
   data: PropTypes.shape({
     loading: PropTypes.bool,
     tasks: PropTypes.array,
-    incompleteCount: PropTypes.number,
     currentUser: PropTypes.object,
   }).isRequired,
 };
@@ -168,7 +168,6 @@ App.defaultProps = {
   data: {
     loading: true,
     tasks: [],
-    incompleteCount: 0,
     currentUser: null,
   }
 };
