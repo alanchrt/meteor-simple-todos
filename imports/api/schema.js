@@ -1,6 +1,11 @@
 export const typeDefs = `
+type Email {
+  address: String
+}
+
 type User {
   _id: String
+  emails: [Email]
 }
 
 type Task {

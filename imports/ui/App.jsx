@@ -22,6 +22,9 @@ import AccountsUIWrapper from './AccountsUIWrapper';
     incompleteCount
     currentUser {
       _id
+      emails {
+        address
+      }
     }
   }
 `)
@@ -37,7 +40,25 @@ import AccountsUIWrapper from './AccountsUIWrapper';
       createdAt
     }
   }
-`, { name: 'addTask' })
+`, {
+  props: ({ ownProps, mutate }) => ({
+    addTask: (text) => {
+      return mutate({
+        variables: { text },
+        updateQueries: {
+          AppQuery: (prev, { mutationResult }) => {
+            const task = mutationResult.data.addTask;
+            return update(prev, {
+              tasks: {
+                $unshift: [task],
+              },
+            });
+          },
+        },
+      });
+    },
+  }),
+})
 class App extends Component {
   constructor(props) {
     super(props);
@@ -58,19 +79,8 @@ class App extends Component {
     event.preventDefault();
     const { text } = this.state;
     const { addTask } = this.props;
-    addTask({
-      variables: { text },
-      updateQueries: {
-        AppQuery: (prev, { mutationResult }) => {
-          const task = mutationResult.data.addTask;
-          return update(prev, {
-            tasks: {
-              $unshift: [task],
-            },
-          });
-        },
-      },
-    });
+    const { currentUser } = this.props.data;
+    addTask(text);
     this.setState({ text: '' });
   }
 
