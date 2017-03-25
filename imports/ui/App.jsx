@@ -3,8 +3,6 @@ import { Meteor } from 'meteor/meteor';
 import { gql, graphql } from 'react-apollo';
 import update from 'immutability-helper';
 
-import { Tasks } from '../api/tasks';
-
 import Task from './Task';
 import AccountsUIWrapper from './AccountsUIWrapper';
 

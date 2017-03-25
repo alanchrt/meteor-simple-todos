@@ -4,8 +4,6 @@ import { gql, graphql } from 'react-apollo';
 import classnames from 'classnames';
 import update from 'immutability-helper';
 
-import { Tasks } from '../api/tasks';
-
 @graphql(gql`
   mutation deleteTask($id: String!) {
     deleteTask(id: $id) {
@@ -57,19 +55,48 @@ import { Tasks } from '../api/tasks';
         variables: { id: taskId, setChecked },
         updateQueries: {
           AppQuery: (prev, { mutationResult }) => {
-            let taskIndex;
             const checkedTask = mutationResult.data.setChecked;
-            prev.tasks.find((task, i) => {
-              if (taskId === checkedTask._id) {
-                taskIndex = i;
-                return true;
-              }
-            });
             return update(prev, {
               tasks: {
                 $apply: tasks => tasks.map(task => {
                   if (task._id === checkedTask._id) {
                     return checkedTask;
+                  }
+                  return task;
+                }),
+              },
+            });
+          },
+        },
+      });
+    },
+  }),
+})
+@graphql(gql`
+  mutation setPrivate($id: String!, $setToPrivate: Boolean!) {
+    setPrivate(id: $id, setToPrivate: $setToPrivate) {
+      _id
+      text
+      email
+      owner
+      checked
+      private
+      createdAt
+    }
+  }
+`, {
+  props: ({ ownProps, mutate }) => ({
+    setPrivate: (taskId, setToPrivate) => {
+      return mutate({
+        variables: { id: taskId, setToPrivate },
+        updateQueries: {
+          AppQuery: (prev, { mutationResult }) => {
+            const returnedTask = mutationResult.data.setPrivate;
+            return update(prev, {
+              tasks: {
+                $apply: tasks => tasks.map(task => {
+                  if (task._id === returnedTask._id) {
+                    return returnedTask;
                   }
                   return task;
                 }),
@@ -92,7 +119,8 @@ export default class Task extends Component {
   }
 
   togglePrivate() {
-    Meteor.call('tasks.setPrivate', this.props.task._id, !this.props.task.private);
+    const { setPrivate } = this.props;
+    setPrivate(this.props.task._id, !this.props.task.private);
   }
 
   deleteThisTask() {

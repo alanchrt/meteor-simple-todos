@@ -1,5 +1,6 @@
 import { Meteor } from 'meteor/meteor';
-import { Tasks } from './tasks';
+
+export const Tasks = new Mongo.Collection('tasks');
 
 export const resolvers = {
   Query: {
@@ -55,17 +56,30 @@ export const resolvers = {
       });
     },
     setChecked(root, args, context) {
-        const taskId = args.id;
-        const setChecked = args.setChecked;
-        const task = Tasks.findOne(taskId);
-        if (task.private && task.owner !== Meteor.userId()) {
-          return null;
-        }
-        return new Promise(resolve => {
-          Tasks.update(taskId, { $set: { checked: setChecked } }, () =>{
-            resolve(Tasks.findOne(taskId));
-          });
+      const taskId = args.id;
+      const setChecked = args.setChecked;
+      const task = Tasks.findOne(taskId);
+      if (task.private && task.owner !== context.userId) {
+        return null;
+      }
+      return new Promise(resolve => {
+        Tasks.update(taskId, { $set: { checked: setChecked } }, () =>{
+          resolve(Tasks.findOne(taskId));
         });
+      });
+    },
+    setPrivate(root, args, context) {
+      const taskId = args.id;
+      const setToPrivate = args.setToPrivate;
+      const task = Tasks.findOne(taskId);
+      if (task.owner !== context.userId) {
+        return null;
+      }
+      return new Promise(resolve => {
+        Tasks.update(taskId, { $set: { private: setToPrivate } }, () =>{
+          resolve(Tasks.findOne(taskId));
+        });
+      });
     },
   }
 };
